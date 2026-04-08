@@ -3,41 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختبار الموقع الجغرافي</title>
+    <title>اختبار الكاميرا</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        button { background-color: #28a745; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #218838; }
-        #result { margin-top: 20px; color: #333; font-weight: bold; }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #1a1a1a; color: white; }
+        .container { text-align: center; padding: 20px; }
+        video { width: 90%; max-width: 500px; border: 3px solid #007bff; border-radius: 10px; display: none; margin-top: 20px; }
+        button { background-color: #007bff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>خدمة تحديد الموقع</h2>
-        <p>اضغط على الزر أدناه لتجربة طلب الإذن من المتصفح:</p>
-        <button onclick="fetchLocation()">تحديد موقعي الآن</button>
-        <div id="result"></div>
+    <div class="container">
+        <h2>اختبار الوصول للكاميرا</h2>
+        <p>اضغط لتشغيل الكاميرا الأمامية:</p>
+        <button onclick="startCamera()">تشغيل الكاميرا</button>
+        <video id="video" autoplay playsinline></video>
+        <p id="status"></p>
     </div>
 
     <script>
-        function fetchLocation() {
-            const resultDiv = document.getElementById('result');
-            if (navigator.geolocation) {
-                resultDiv.innerHTML = "جاري طلب الإذن...";
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        resultDiv.innerHTML = `تم تحديد موقعك بنجاح:<br>خط العرض: ${lat}<br>خط الطول: ${lon}`;
-                    },
-                    (error) => {
-                        resultDiv.innerHTML = "تم رفض طلب الوصول للموقع أو حدث خطأ.";
-                    }
-                );
-            } else {
-                resultDiv.innerHTML = "متصفحك لا يدعم خاصية تحديد الموقع.";
+        async function startCamera() {
+            const video = document.getElementById('video');
+            const status = document.getElementById('status');
+            try {
+                // طلب الإذن للوصول للكاميرا
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = "block";
+                status.innerHTML = "تم الاتصال بالكاميرا بنجاح!";
+            } catch (err) {
+                status.innerHTML = "فشل الوصول للكاميرا (تم رفض الإذن).";
             }
         }
     </script>
