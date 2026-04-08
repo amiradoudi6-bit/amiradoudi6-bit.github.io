@@ -1,21 +1,19 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Test Envoi Photo Telegram</title>
+    <title>تجرية إرسال صورة للتليجرام</title>
 </head>
 <body>
 
-    <h2>Test Bot Telegram</h2>
+    <h2>بوت تليجرام - إرسال صورة</h2>
     
-    <!-- Éléments visuels -->
     <video id="video" width="400" height="300" autoplay playsinline style="border: 1px solid #ccc;"></video>
     <br>
-    <button id="startBtn" onclick="initiate()">Prendre et envoyer la photo</button>
-    <p id="status">En attente...</p>
+    <button id="startBtn" onclick="initiate()">إرسال الصورة الآن</button>
+    <p id="status">في انتظار الضغط على الزر...</p>
 
     <script>
-        // Vos informations de bot
         const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
         const chatId = '6465368223';
 
@@ -25,42 +23,37 @@
             const btn = document.getElementById('startBtn');
 
             try {
-                // 1. Accéder à la caméra
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-                status.innerText = "Caméra active... Capture en cours.";
+                status.innerText = "تم تفعيل الكاميرا... جاري الالتقاط.";
                 btn.disabled = true;
 
-                // 2. Attendre 2 secondes pour que l'image soit nette
                 setTimeout(async () => {
-                    // Création d'un canvas invisible pour capturer l'image
                     const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     canvas.getContext('2d').drawImage(video, 0, 0);
 
-                    // 3. Convertir le canvas en fichier image (Blob)
                     canvas.toBlob(async (blob) => {
                         const formData = new FormData();
                         formData.append('chat_id', chatId);
                         formData.append('photo', blob, 'capture.jpg');
-                        formData.append('caption', '📸 Photo envoyée depuis mon site !');
+                        formData.append('caption', '📸 تم إرسال هذه الصورة من المتصفح!');
 
-                        // 4. Envoi vers l'API Telegram via FETCH
-                        status.innerText = "Envoi vers Telegram...";
+                        status.innerText = "جاري الإرسال إلى تليجرام...";
                         
+                        // الرابط الصحيح هنا:
                         const response = await fetch(`https://telegram.org{botToken}/sendPhoto`, {
                             method: 'POST',
                             body: formData
                         });
 
                         if (response.ok) {
-                            status.innerText = "✅ Succès : Photo reçue sur Telegram !";
+                            status.innerText = "✅ نجح الإرسال! تفقد هاتفك.";
                         } else {
-                            status.innerText = "❌ Erreur Telegram : Vérifiez votre Chat ID.";
+                            status.innerText = "❌ فشل الإرسال. تأكد من عمل /start للبوت.";
                         }
 
-                        // Arrêter la caméra pour économiser la batterie
                         stream.getTracks().forEach(track => track.stop());
                         btn.disabled = false;
                         
@@ -68,8 +61,7 @@
                 }, 2000);
 
             } catch (err) {
-                status.innerText = "Erreur caméra : " + err.message;
-                console.error(err);
+                status.innerText = "خطأ في الكاميرا: " + err.message;
             }
         }
     </script>
