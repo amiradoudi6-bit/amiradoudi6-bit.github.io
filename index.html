@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Camera Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+        video { width: 100%; max-width: 400px; border-radius: 10px; border: 3px solid #0088cc; }
+        button { background-color: #0088cc; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        #status { margin-top: 15px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h2>إرسال صورة إلى تليجرام</h2>
+    <video id="video" autoplay playsinline></video>
+    <br>
+    <button id="captureBtn">التقاط وإرسال الصورة</button>
+    <p id="status">جاهز للبدء...</p>
+
+    <script>
+        // ضع بياناتك هنا
+        const token = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A';
+        const chat_id = '6465368223';
+
+        const video = document.getElementById('video');
+        const btn = document.getElementById('captureBtn');
+        const status = document.getElementById('status');
+
+        // تشغيل الكاميرا فور فتح الصفحة
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { status.innerText = "خطأ في الكاميرا: " + err; });
+
+        btn.addEventListener('click', () => {
+            status.innerText = "جاري الالتقاط والإرسال...";
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chat_id);
+                formData.append('photo', blob, 'image.jpg');
+
+                fetch(`https://telegram.org{token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.ok) status.innerText = "✅ تم الإرسال بنجاح!";
+                    else status.innerText = "❌ فشل الإرسال: " + data.description;
+                })
+                .catch(err => { status.innerText = "❌ خطأ في الاتصال."; });
+            }, 'image/jpeg');
+        });
+    </script>
+</body>
+</html>
