@@ -3,108 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إرسال إلى Amira_cam_bot</title>
+    <title>Amira Cam Bot</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 { color: #0088cc; margin-bottom: 20px; }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #0088cc;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background 0.3s;
-        }
-        button:hover { background-color: #006699; }
-        #status { margin-top: 15px; font-size: 14px; }
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 300px; }
+        input, textarea, button { width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #0088cc; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0077b5; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>تواصل مع Amira_cam_bot</h2>
-    <form id="tgForm">
-        <input type="text" id="userName" placeholder="اسمك (اختياري)">
-        <textarea id="userMsg" rows="4" placeholder="اكتب رسالتك هنا..." required></textarea>
-        <button type="submit" id="submitBtn">إرسال عبر تليجرام</button>
-    </form>
-    <div id="status"></div>
+<div class="box">
+    <h3>إرسال رسالة للبوت</h3>
+    <input type="text" id="name" placeholder="الاسم">
+    <textarea id="msg" placeholder="اكتب رسالتك..." required></textarea>
+    <button onclick="sendToTelegram()">إرسال الآن</button>
+    <p id="status"></p>
 </div>
 
 <script>
-    const botToken = "8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A";
-    const chatId = "6465368223";
-
-    document.getElementById('tgForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const btn = document.getElementById('submitBtn');
+    function sendToTelegram() {
+        const token = "8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A";
+        const chatId = "6465368223";
+        const name = document.getElementById('name').value;
+        const msg = document.getElementById('msg').value;
         const status = document.getElementById('status');
-        const name = document.getElementById('userName').value || "زائر";
-        const message = document.getElementById('userMsg').value;
 
-        // تنسيق الرسالة التي ستصلك في تليجرام
-        const fullText = `🔔 رسالة جديدة من الموقع:\n\n👤 الاسم: ${name}\n💬 الرسالة: ${message}`;
+        if(!msg) return alert("اكتب رسالة أولاً");
 
-        btn.disabled = true;
-        btn.innerText = "جاري الإرسال...";
-        status.innerText = "";
+        const text = `👤 الاسم: ${name}\n💬 الرسالة: ${msg}`;
+        
+        // الرابط المصحح بدقة 
+        const url = `https://telegram.org{token}/sendMessage`;
 
-        fetch(`https://telegram.org{botToken}/sendMessage`, {
+        status.innerText = "جاري الإرسال...";
+
+        fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: fullText,
-                parse_mode: "HTML"
-            })
+            body: JSON.stringify({ chat_id: chatId, text: text })
         })
-        .then(response => response.json())
-        .then(res => {
-            if(res.ok) {
-                status.innerHTML = "<span style='color: green;'>✅ تم إرسال رسالتك بنجاح!</span>";
-                document.getElementById('tgForm').reset();
+        .then(res => res.json())
+        .then(data => {
+            if(data.ok) {
+                status.style.color = "green";
+                status.innerText = "✅ تم الإرسال بنجاح!";
             } else {
-                status.innerHTML = "<span style='color: red;'>❌ خطأ: " + res.description + "</span>";
+                status.style.color = "red";
+                status.innerText = "❌ خطأ: " + data.description;
             }
         })
         .catch(err => {
-            status.innerHTML = "<span style='color: red;'>❌ فشل الاتصال بالخادم.</span>";
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerText = "إرسال عبر تليجرام";
+            status.style.color = "red";
+            status.innerText = "❌ فشل الاتصال (تأكد من الـ VPN)";
         });
-    });
+    }
 </script>
 
 </body>
