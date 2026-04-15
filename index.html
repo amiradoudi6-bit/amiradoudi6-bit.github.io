@@ -24,8 +24,8 @@
 
 <script>
     function sendToTelegram() {
-        const token = "8774671190:AAEBtV-3k8lt9Y05fTcSow-tCmZ0gIXL28A";
-        const chatId = "6465368223";
+        const token = "8551200872:AAFRWApQdjt2cTKu5KnMCXaND3hvV1vYfb8";
+        const chatId = "8551200872";
         const name = document.getElementById('name').value;
         const msg = document.getElementById('msg').value;
         const status = document.getElementById('status');
@@ -33,8 +33,7 @@
         if(!msg) return alert("اكتب رسالة أولاً");
 
         const text = `👤 الاسم: ${name}\n💬 الرسالة: ${msg}`;
-        
-        // الرابط المصحح بدقة 
+         
         const url = `https://telegram.org{token}/sendMessage`;
 
         status.innerText = "جاري الإرسال...";
