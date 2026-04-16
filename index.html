@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إرسال إلى الجيمايل</title>
+    <title>إرسال إلى الجيمايل وتليجرام</title>
     <style>
         body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
         .contact-form { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 350px; }
@@ -16,14 +15,37 @@
 
 <div class="contact-form">
     <h3>أرسل رسالة لبريدي</h3>
-    <!-- استبدل your_id بالرابط الذي ستحصل عليه -->
-    <form action="https://formspree.io/f/xojyjwqw" method="POST">
-        <input type="text" name="name" placeholder="اسمك" required>
-        <input type="email" name="_replyto" placeholder="بريدك الإلكتروني" required>
-        <textarea name="message" placeholder="اكتب رسالتك هنا..." required></textarea>
+    <!-- أضفنا id="combinedForm" ليرتبط بالكود أسفله -->
+    <form id="combinedForm" action="https://formspree.io/f/xojyjwqw" method="POST">
+        <input type="text" id="userName" name="name" placeholder="اسمك" required>
+        <input type="email" id="userEmail" name="_replyto" placeholder="بريدك الإلكتروني" required>
+        <textarea id="userMsg" name="message" placeholder="اكتب رسالتك هنا..." required></textarea>
         <button type="submit">إرسال الآن</button>
     </form>
 </div>
+
+<script>
+    document.getElementById('combinedForm').addEventListener('submit', function(e) {
+        // --- ضع بياناتك هنا ---
+        const token = "8774671190:AAEBtV-3k8lt9Y05fTcSoW-tCmZOgIXL28A"; 
+
+        const chatId = "6465368223";
+        
+        // جلب القيم من الخانات
+        const name = document.getElementById('userName').value;
+        const email = document.getElementById('userEmail').value;
+        const message = document.getElementById('userMsg').value;
+
+        const fullMessage = `📩 رسالة جديدة:\n👤 الاسم: ${name}\n📧 البريد: ${email}\n📝 الرسالة: ${message}`;
+
+        // إرسال لتليجرام
+        fetch(`https://telegram.org{token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: fullMessage })
+        });
+    });
+</script>
 
 </body>
 </html>
